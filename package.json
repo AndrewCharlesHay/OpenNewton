@@ -1,0 +1,76 @@
+{
+  "name": "github-actions-monitor",
+  "displayName": "GitHub Actions Monitor",
+  "description": "Monitors GitHub Actions workflows and notifies about failures",
+  "version": "0.1.0",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "github-actions-monitor.checkStatus",
+        "title": "GitHub Actions: Check Status"
+      },
+      {
+        "command": "github-actions-monitor.configure",
+        "title": "GitHub Actions: Configure"
+      },
+      {
+        "command": "github-actions-monitor.showFailures",
+        "title": "GitHub Actions: Show Recent Failures"
+      }
+    ],
+    "configuration": {
+      "title": "GitHub Actions Monitor",
+      "properties": {
+        "githubActionsMonitor.token": {
+          "type": "string",
+          "default": "",
+          "description": "GitHub Personal Access Token (required for private repos)"
+        },
+        "githubActionsMonitor.pollInterval": {
+          "type": "number",
+          "default": 300,
+          "description": "Polling interval in seconds (default: 300)"
+        },
+        "githubActionsMonitor.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable automatic monitoring"
+        },
+        "githubActionsMonitor.notifyOnFailure": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show notifications when workflows fail"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.80.0",
+    "@types/node": "20.x",
+    "@typescript-eslint/eslint-plugin": "^6.4.1",
+    "@typescript-eslint/parser": "^6.4.1",
+    "eslint": "^8.47.0",
+    "typescript": "^5.1.6"
+  },
+  "dependencies": {
+    "@octokit/rest": "^20.0.2"
+  }
+}
