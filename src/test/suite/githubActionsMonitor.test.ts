@@ -52,7 +52,7 @@ suite('GitHubActionsMonitor Test Suite', () => {
                 return defaultValue;
             })
         };
-        sinon.stub(vscode.workspace, 'getConfiguration').returns(configStub as any);
+        sinon.stub(vscode.workspace, 'getConfiguration').returns(configStub as unknown as vscode.WorkspaceConfiguration);
 
         // Stub authentication
         sinon.stub(vscode.authentication, 'getSession').resolves({

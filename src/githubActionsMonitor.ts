@@ -116,7 +116,7 @@ export class GitHubActionsMonitor {
                 per_page: 5,
             });
 
-            if (runs.workflow_runs.length === 0) {
+            if (!runs.workflow_runs || runs.workflow_runs.length === 0) {
                 this.statusBarManager.updateStatus('success', 'No runs');
                 return;
             }
