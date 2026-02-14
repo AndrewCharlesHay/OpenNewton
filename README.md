@@ -127,9 +127,26 @@ npm run lint
 
 ### Testing
 
+The extension includes comprehensive unit tests:
+
 ```bash
+# Run all tests
 npm test
+
+# Compile and lint only
+npm run pretest
+
+# Watch mode for development
+npm run watch
 ```
+
+See [TESTING.md](TESTING.md) for detailed testing documentation.
+
+**Test Coverage:**
+- ✅ StatusBarManager - UI state management
+- ✅ GitHubActionsMonitor - Core monitoring logic
+- ✅ Extension activation and commands
+- ✅ Configuration handling
 
 ## Architecture
 
