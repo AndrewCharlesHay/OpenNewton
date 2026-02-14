@@ -54,6 +54,14 @@ suite('GitHubActionsMonitor Test Suite', () => {
         };
         sinon.stub(vscode.workspace, 'getConfiguration').returns(configStub as any);
 
+        // Stub authentication
+        sinon.stub(vscode.authentication, 'getSession').resolves({
+            id: 'test-session',
+            accessToken: 'test-token',
+            account: { id: 'test-user', label: 'Test User' },
+            scopes: ['repo']
+        });
+
         monitor = new GitHubActionsMonitor(context, statusBarManager);
     });
 
