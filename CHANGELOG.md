@@ -40,3 +40,13 @@ All notable changes to the "GitHub Actions Monitor" extension will be documented
 - `githubActionsMonitor.pollInterval` - Polling interval in seconds
 - `githubActionsMonitor.enabled` - Enable/disable monitoring
 - `githubActionsMonitor.notifyOnFailure` - Enable/disable notifications
+
+### Testing
+- Comprehensive unit test suite with 21 tests
+- Test frameworks: Mocha, Sinon, VS Code Test API
+- Test coverage for all major components:
+  - StatusBarManager (8 tests)
+  - GitHubActionsMonitor (9 tests)
+  - Extension activation (4 tests)
+- Automated testing in CI/CD pipeline
+- TESTING.md documentation for test guidelines
