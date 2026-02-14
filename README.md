@@ -1,6 +1,6 @@
-# OpenNewton - GitHub Actions Monitor
+# OpenNewton
 
-A VS Code extension that monitors GitHub Actions workflows and notifies you when builds fail, providing detailed context about failures to help you debug faster.
+**OpenNewton** is a VS Code extension that monitors your GitHub Actions workflows and notifies you immediately when a build fails. It's designed to keep you in the flow by bringing CI/CD status directly into your editor.ebug faster.
 
 ## Features
 
@@ -39,18 +39,23 @@ To monitor private repositories or increase API rate limits, you'll need a GitHu
 2. Click "Generate new token" (classic)
 3. Select the following scopes:
    - `repo` (for private repositories)
-   - `workflow` (to access GitHub Actions)
-4. Copy the generated token
-5. In VS Code, run the command `GitHub Actions: Configure` and paste your token
 
-### Settings
+### Configuration
 
-Access settings via File → Preferences → Settings, then search for "GitHub Actions Monitor":
+| Setting                      | Description                        | Default        |
+| ---------------------------- | ---------------------------------- | -------------- |
+| `openNewton.token`           | GitHub Personal Access Token (PAT) | `null`         |
+| `openNewton.pollInterval`    | Time in seconds between checks     | `300` (5 mins) |
+| `openNewton.enabled`         | Enable/disable monitoring          | `true`         |
+| `openNewton.notifyOnFailure` | Show popup on failure              | `true`         |
 
-- **`githubActionsMonitor.token`**: Your GitHub Personal Access Token
-- **`githubActionsMonitor.pollInterval`**: How often to check for updates (in seconds, default: 300)
-- **`githubActionsMonitor.enabled`**: Enable/disable automatic monitoring
-- **`githubActionsMonitor.notifyOnFailure`**: Show notifications when workflows fail
+### Setup
+
+1.  **Generate a Token**: Go to GitHub Settings -> Developer Settings -> Personal Access Tokens. Create a new token with `repo` scope.
+2.  **Configure VS Code**:
+    - Open Settings (`Cmd+,`)
+    - Search for "OpenNewton"
+    - Paste your token into `Open Newton: Token`
 
 ## Usage
 
@@ -58,13 +63,14 @@ Access settings via File → Preferences → Settings, then search for "GitHub A
 
 Access these commands via the Command Palette (`Ctrl+Shift+P` or `Cmd+Shift+P`):
 
-- **GitHub Actions: Check Status** - Manually check the current status of your workflows
-- **GitHub Actions: Configure** - Set up your GitHub token
-- **GitHub Actions: Show Recent Failures** - View a list of recent workflow failures
+- **OpenNewton: Check Status** - Manually check the current status of your workflows
+- **OpenNewton: Configure** - Set up your GitHub token
+- **OpenNewton: Show Recent Failures** - View a list of recent workflow failures
 
 ### Status Bar
 
 The extension adds a status bar item that shows:
+
 - ✓ Green checkmark when all workflows are passing
 - ✗ Red X when workflows are failing
 - ⟳ Spinning sync icon when checking status
@@ -73,14 +79,16 @@ The extension adds a status bar item that shows:
 ### Notifications
 
 When a workflow fails, you'll see a notification with options to:
+
 - **View Details**: Opens a detailed view of the failure in VS Code
 - **Open in Browser**: Opens the workflow run in GitHub
 
 ### Output Channel
 
-All failures are logged to the "GitHub Actions Failures" output channel, which can be accessed by:
+All failures are logged to the "OpenNewton" output channel, which can be accessed by:
+
 1. Opening the Output panel (View → Output)
-2. Selecting "GitHub Actions Failures" from the dropdown
+2. Selecting "OpenNewton" from the dropdown
 
 This makes it easy for coding agents and automation tools to access failure information.
 
@@ -96,7 +104,7 @@ This makes it easy for coding agents and automation tools to access failure info
 
 This extension is designed to work seamlessly with coding agents like GitHub Copilot. When a workflow fails:
 
-1. A detailed message is written to the "GitHub Actions Failures" output channel
+1. A detailed message is written to the "OpenNewton" output channel
 2. The message includes:
    - Workflow name and status
    - Branch and commit information
@@ -143,6 +151,7 @@ npm run watch
 See [TESTING.md](TESTING.md) for detailed testing documentation.
 
 **Test Coverage:**
+
 - ✅ StatusBarManager - UI state management
 - ✅ GitHubActionsMonitor - Core monitoring logic
 - ✅ Extension activation and commands
@@ -161,6 +170,7 @@ The extension consists of three main components:
 ### "No GitHub repository detected"
 
 Make sure you have:
+
 - Opened a folder that contains a Git repository
 - The repository has a GitHub remote configured
 - VS Code's Git extension is enabled

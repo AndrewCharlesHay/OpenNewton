@@ -6,7 +6,7 @@ let monitor: GitHubActionsMonitor | undefined;
 let statusBarManager: StatusBarManager | undefined;
 
 export function activate(context: vscode.ExtensionContext) {
-    console.log('GitHub Actions Monitor is now active');
+    console.log('OpenNewton is now active');
 
     // Initialize the status bar manager
     statusBarManager = new StatusBarManager();
@@ -20,16 +20,14 @@ export function activate(context: vscode.ExtensionContext) {
 
     // Register commands
     const checkStatusCommand = vscode.commands.registerCommand(
-        'github-actions-monitor.checkStatus',
+        'opennewton.checkStatus',
         async () => {
             await monitor?.checkStatus();
         }
     );
 
-
-
     const showFailuresCommand = vscode.commands.registerCommand(
-        'github-actions-monitor.showFailures',
+        'opennewton.showFailures',
         async () => {
             await monitor?.showRecentFailures();
         }

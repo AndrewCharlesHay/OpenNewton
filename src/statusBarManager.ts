@@ -10,9 +10,9 @@ export class StatusBarManager {
             vscode.StatusBarAlignment.Left,
             100
         );
-        this.statusBarItem.command = 'github-actions-monitor.checkStatus';
+        this.statusBarItem.command = 'opennewton.checkStatus';
         this.statusBarItem.show();
-        this.updateStatus('idle', 'GitHub Actions');
+        this.updateStatus('idle', 'OpenNewton');
     }
 
     public updateStatus(type: StatusType, text: string) {

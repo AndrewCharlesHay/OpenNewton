@@ -1,8 +1,13 @@
 {
-  "name": "github-actions-monitor",
-  "displayName": "GitHub Actions Monitor",
+  "name": "opennewton",
+  "displayName": "OpenNewton",
   "description": "Monitors GitHub Actions workflows and notifies about failures",
-  "version": "0.1.0",
+  "version": "0.2.1",
+  "publisher": "AndrewCharlesHay",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AndrewCharlesHay/OpenNewton"
+  },
   "engines": {
     "vscode": "^1.80.0"
   },
@@ -16,30 +21,30 @@
   "contributes": {
     "commands": [
       {
-        "command": "github-actions-monitor.checkStatus",
-        "title": "GitHub Actions: Check Status"
+        "command": "opennewton.checkStatus",
+        "title": "OpenNewton: Check Status"
       },
 
       {
-        "command": "github-actions-monitor.showFailures",
-        "title": "GitHub Actions: Show Recent Failures"
+        "command": "opennewton.showFailures",
+        "title": "OpenNewton: Show Recent Failures"
       }
     ],
     "configuration": {
-      "title": "GitHub Actions Monitor",
+      "title": "OpenNewton",
       "properties": {
 
-        "githubActionsMonitor.pollInterval": {
+        "openNewton.pollInterval": {
           "type": "number",
           "default": 300,
           "description": "Polling interval in seconds (default: 300)"
         },
-        "githubActionsMonitor.enabled": {
+        "openNewton.enabled": {
           "type": "boolean",
           "default": true,
           "description": "Enable automatic monitoring"
         },
-        "githubActionsMonitor.notifyOnFailure": {
+        "openNewton.notifyOnFailure": {
           "type": "boolean",
           "default": true,
           "description": "Show notifications when workflows fail"
