@@ -8,12 +8,13 @@ suite('LogAnalysis Test Suite', () => {
 	let logAnalysis: LogAnalysis;
 
 	setup(() => {
-		octokitStub = sinon.createStubInstance(Octokit);
-        // Mock the nested actions property
-        (octokitStub as any).actions = {
-            listJobsForWorkflowRun: sinon.stub(),
-            downloadJobLogsForWorkflowRun: sinon.stub()
-        };
+		// Manual mock for Octokit
+		octokitStub = {
+			actions: {
+				listJobsForWorkflowRun: sinon.stub(),
+				downloadJobLogsForWorkflowRun: sinon.stub()
+			}
+		};
 		logAnalysis = new LogAnalysis(octokitStub as unknown as Octokit);
 	});
 

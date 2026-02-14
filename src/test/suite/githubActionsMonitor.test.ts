@@ -67,8 +67,13 @@ suite('GitHubActionsMonitor Test Suite', () => {
         assert.ok((vscode.window.createOutputChannel as sinon.SinonStub).calledWith('GitHub Actions Failures'));
     });
 
-    test('Should initialize with configuration', () => {
-        assert.ok(vscode.workspace.getConfiguration as sinon.SinonStub);
+    test('Should check configuration on start', () => {
+        // Stub workspace folders for successful start
+        sinon.stub(vscode.workspace, 'workspaceFolders').value([{ uri: { fsPath: '/test' } }]);
+
+        monitor.start();
+        
+        // getConfiguration is called in start()
         assert.ok((vscode.workspace.getConfiguration as sinon.SinonStub).calledWith('githubActionsMonitor'));
     });
 
@@ -79,7 +84,6 @@ suite('GitHubActionsMonitor Test Suite', () => {
         monitor.start();
         
         // Should have called updateStatus (at least once for initial check)
-        // We can't test the exact number without mocking the GitHub API
         assert.ok(updateStatusStub.called || !updateStatusStub.called); // Test passes either way
     });
 
@@ -104,7 +108,6 @@ suite('GitHubActionsMonitor Test Suite', () => {
         monitor.stop();
         
         // Monitor should have stopped (timer cleared)
-        // This is verified by the fact that it doesn't throw an error
         assert.ok(true);
     });
 
@@ -118,27 +121,21 @@ suite('GitHubActionsMonitor Test Suite', () => {
         // Stub workspace folders to be undefined
         sinon.stub(vscode.workspace, 'workspaceFolders').value(undefined);
         
-        // Stub window.showWarningMessage
-        const showWarningStub = sinon.stub(vscode.window, 'showWarningMessage');
-        
         await monitor.checkStatus();
         
-        // Should show warning about no repository
-        assert.ok(showWarningStub.called);
+        // Should update status bar to idle/No GitHub Repo
+        assert.ok(updateStatusStub.calledWith('idle', 'No GitHub Repo'));
     });
 
     test('Should handle checkStatus without token', async () => {
         // Stub workspace folders
         sinon.stub(vscode.workspace, 'workspaceFolders').value([{ uri: { fsPath: '/test' } }]);
         
-        // Stub window.showWarningMessage
-        const showWarningStub = sinon.stub(vscode.window, 'showWarningMessage');
-        
         await monitor.checkStatus();
         
-        // Should show warning about no token (eventually)
-        // The actual behavior depends on git extension availability
-        assert.ok(true); // Test passes
+        // In the new implementation, it tries to auth. We can't easily mock auth success here 
+        // without more mocking, but it shouldn't crash.
+        assert.ok(true); 
     });
 
     test('Should handle showRecentFailures with no failures', async () => {
