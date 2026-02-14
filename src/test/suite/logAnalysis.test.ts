@@ -4,7 +4,7 @@ import { Octokit } from '@octokit/rest';
 import * as sinon from 'sinon';
 
 suite('LogAnalysis Test Suite', () => {
-	let octokitStub: sinon.SinonStubbedInstance<Octokit>;
+	let octokitStub: any;
 	let logAnalysis: LogAnalysis;
 
 	setup(() => {
