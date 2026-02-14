@@ -4,6 +4,7 @@ import { Octokit } from '@octokit/rest';
 import * as sinon from 'sinon';
 
 suite('LogAnalysis Test Suite', () => {
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	let octokitStub: any;
 	let logAnalysis: LogAnalysis;
 
@@ -28,6 +29,7 @@ suite('LogAnalysis Test Suite', () => {
 2023-10-27T10:00:03.000Z Job failed.
 `;
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (octokitStub as any).actions.listJobsForWorkflowRun.resolves({
             data: {
                 jobs: [
@@ -36,6 +38,7 @@ suite('LogAnalysis Test Suite', () => {
             }
         });
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (octokitStub as any).actions.downloadJobLogsForWorkflowRun.resolves({
             data: logContent
         });
@@ -46,6 +49,7 @@ suite('LogAnalysis Test Suite', () => {
 	});
 
     test('getFailureContext handles no failed jobs', async () => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (octokitStub as any).actions.listJobsForWorkflowRun.resolves({
             data: {
                 jobs: [
@@ -59,6 +63,7 @@ suite('LogAnalysis Test Suite', () => {
     });
 
     test('getFailureContext handles download error', async () => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
          (octokitStub as any).actions.listJobsForWorkflowRun.resolves({
             data: {
                 jobs: [
@@ -67,6 +72,7 @@ suite('LogAnalysis Test Suite', () => {
             }
         });
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (octokitStub as any).actions.downloadJobLogsForWorkflowRun.rejects(new Error('API Error'));
 
         const result = await logAnalysis.getFailureContext('owner', 'repo', 123);

@@ -2,7 +2,7 @@
   "name": "opennewton",
   "displayName": "OpenNewton",
   "description": "Monitors GitHub Actions workflows and notifies about failures",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "publisher": "AndrewCharlesHay",
   "repository": {
     "type": "git",
@@ -48,6 +48,20 @@
           "type": "boolean",
           "default": true,
           "description": "Show notifications when workflows fail"
+        },
+        "openNewton.chatCommand": {
+          "type": "string",
+          "default": "workbench.action.chat.open",
+          "description": "Command to execute when a failure is detected (e.g. 'workbench.action.chat.open')"
+        },
+        "openNewton.logFormat": {
+          "type": "string",
+          "enum": [
+            "text",
+            "json"
+          ],
+          "default": "text",
+          "description": "Format for output channel logs"
         }
       }
     }

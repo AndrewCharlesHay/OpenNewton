@@ -9,6 +9,7 @@ export class LogAnalysis {
             const { data: jobs } = await this.octokit.actions.listJobsForWorkflowRun({
                 owner,
                 repo,
+                // eslint-disable-next-line @typescript-eslint/naming-convention
                 run_id: runId
             });
             
@@ -22,6 +23,7 @@ export class LogAnalysis {
                 const response = await this.octokit.actions.downloadJobLogsForWorkflowRun({
                     owner,
                     repo,
+                    // eslint-disable-next-line @typescript-eslint/naming-convention
                     job_id: failedJob.id,
                 });
 

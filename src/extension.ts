@@ -6,6 +6,7 @@ let monitor: GitHubActionsMonitor | undefined;
 let statusBarManager: StatusBarManager | undefined;
 
 export function activate(context: vscode.ExtensionContext) {
+    // eslint-disable-next-line no-console
     console.log('OpenNewton is now active');
 
     // Initialize the status bar manager

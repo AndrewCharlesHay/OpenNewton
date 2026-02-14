@@ -9,6 +9,7 @@ suite('GitHubActionsMonitor Test Suite', () => {
     let context: vscode.ExtensionContext;
     let statusBarManager: StatusBarManager;
     let updateStatusStub: sinon.SinonStub;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let outputChannelStub: any;
 
     setup(() => {
@@ -23,12 +24,14 @@ suite('GitHubActionsMonitor Test Suite', () => {
                 get: sinon.stub(),
                 update: sinon.stub()
             }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } as any;
 
         // Create status bar manager stub
         statusBarManager = {
             updateStatus: sinon.stub(),
             dispose: sinon.stub()
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } as any;
         updateStatusStub = statusBarManager.updateStatus as sinon.SinonStub;
 
@@ -44,6 +47,7 @@ suite('GitHubActionsMonitor Test Suite', () => {
 
         // Stub workspace configuration
         const configStub = {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             get: sinon.stub().callsFake((key: string, defaultValue?: any) => {
                 if (key === 'token') { return ''; }
                 if (key === 'enabled') { return true; }
@@ -97,6 +101,7 @@ suite('GitHubActionsMonitor Test Suite', () => {
 
     test('Should not start monitoring when disabled', () => {
         const configStub = {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             get: sinon.stub().callsFake((key: string, defaultValue?: any) => {
                 if (key === 'enabled') { return false; }
                 return defaultValue;

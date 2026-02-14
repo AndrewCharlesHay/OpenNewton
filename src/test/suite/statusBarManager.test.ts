@@ -17,9 +17,11 @@ suite('StatusBarManager Test Suite', () => {
             show: sinon.stub(),
             hide: sinon.stub(),
             dispose: sinon.stub()
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } as any;
 
         // Stub vscode.window.createStatusBarItem
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         sinon.stub(vscode.window, 'createStatusBarItem').returns(statusBarItem as any);
 
         statusBarManager = new StatusBarManager();
