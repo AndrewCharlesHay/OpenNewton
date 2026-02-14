@@ -33,10 +33,12 @@ export class GitHubActionsMonitor {
     private statusBarManager: StatusBarManager;
     private lastCheckedRunId: number = 0;
     private recentFailures: Array<{ run: WorkflowRun; jobs: FailedJob[] }> = [];
+    private outputChannel: vscode.OutputChannel;
 
     constructor(context: vscode.ExtensionContext, statusBarManager: StatusBarManager) {
         this.context = context;
         this.statusBarManager = statusBarManager;
+        this.outputChannel = vscode.window.createOutputChannel('GitHub Actions Failures');
         this.initializeOctokit();
     }
 
@@ -301,13 +303,12 @@ export class GitHubActionsMonitor {
     }
 
     private logForCodingAgent(message: string) {
-        const outputChannel = vscode.window.createOutputChannel('GitHub Actions Failures');
-        outputChannel.appendLine('='.repeat(80));
-        outputChannel.appendLine(`[${new Date().toISOString()}] GITHUB ACTIONS FAILURE DETECTED`);
-        outputChannel.appendLine('='.repeat(80));
-        outputChannel.appendLine(message);
-        outputChannel.appendLine('='.repeat(80));
-        outputChannel.show(true);
+        this.outputChannel.appendLine('='.repeat(80));
+        this.outputChannel.appendLine(`[${new Date().toISOString()}] GITHUB ACTIONS FAILURE DETECTED`);
+        this.outputChannel.appendLine('='.repeat(80));
+        this.outputChannel.appendLine(message);
+        this.outputChannel.appendLine('='.repeat(80));
+        this.outputChannel.show(true);
     }
 
     public async showRecentFailures() {
@@ -355,5 +356,10 @@ export class GitHubActionsMonitor {
             clearInterval(this.timer);
             this.timer = undefined;
         }
+    }
+
+    public dispose() {
+        this.stop();
+        this.outputChannel.dispose();
     }
 }

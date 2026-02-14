@@ -14,6 +14,9 @@ export function activate(context: vscode.ExtensionContext) {
 
     // Initialize the GitHub Actions monitor
     monitor = new GitHubActionsMonitor(context, statusBarManager);
+    context.subscriptions.push({
+        dispose: () => monitor?.dispose()
+    });
 
     // Register commands
     const checkStatusCommand = vscode.commands.registerCommand(
@@ -57,5 +60,5 @@ export function activate(context: vscode.ExtensionContext) {
 }
 
 export function deactivate() {
-    monitor?.stop();
+    monitor?.dispose();
 }
