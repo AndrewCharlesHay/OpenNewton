@@ -11,5 +11,5 @@ jobs:
     steps:
       - name: Run a one-line script
         run: echo Hello, world!
-      - name: Fail on purpose
-        run: exit 1
+      - name: Success step
+        run: echo "Build completed successfully!"
