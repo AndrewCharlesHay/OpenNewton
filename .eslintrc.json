@@ -1,0 +1,26 @@
+{
+  "root": true,
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaVersion": 6,
+    "sourceType": "module"
+  },
+  "plugins": [
+    "@typescript-eslint"
+  ],
+  "rules": {
+    "@typescript-eslint/naming-convention": "error",
+    "@typescript-eslint/semi": "error",
+    "@typescript-eslint/no-explicit-any": "error",
+    "curly": "error",
+    "eqeqeq": "error",
+    "no-throw-literal": "error",
+    "no-console": "error",
+    "semi": "off"
+  },
+  "ignorePatterns": [
+    "out",
+    "dist",
+    "**/*.d.ts"
+  ]
+}

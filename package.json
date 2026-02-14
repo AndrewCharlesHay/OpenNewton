@@ -1,0 +1,75 @@
+{
+  "name": "github-actions-monitor",
+  "displayName": "GitHub Actions Monitor",
+  "description": "Monitors GitHub Actions workflows and notifies about failures",
+  "version": "0.1.0",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "github-actions-monitor.checkStatus",
+        "title": "GitHub Actions: Check Status"
+      },
+
+      {
+        "command": "github-actions-monitor.showFailures",
+        "title": "GitHub Actions: Show Recent Failures"
+      }
+    ],
+    "configuration": {
+      "title": "GitHub Actions Monitor",
+      "properties": {
+
+        "githubActionsMonitor.pollInterval": {
+          "type": "number",
+          "default": 300,
+          "description": "Polling interval in seconds (default: 300)"
+        },
+        "githubActionsMonitor.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable automatic monitoring"
+        },
+        "githubActionsMonitor.notifyOnFailure": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show notifications when workflows fail"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.80.0",
+    "@types/node": "20.x",
+    "@types/mocha": "^10.0.1",
+    "@types/sinon": "^10.0.16",
+    "@typescript-eslint/eslint-plugin": "^6.4.1",
+    "@typescript-eslint/parser": "^6.4.1",
+    "@vscode/test-electron": "^2.3.4",
+    "eslint": "^8.47.0",
+    "glob": "^10.3.10",
+    "mocha": "^10.2.0",
+    "sinon": "^15.2.0",
+    "typescript": "^5.1.6"
+  },
+  "dependencies": {
+    "@octokit/rest": "^20.0.2"
+  }
+}
