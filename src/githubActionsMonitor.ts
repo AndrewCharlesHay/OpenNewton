@@ -3,6 +3,7 @@ import { Octokit } from '@octokit/rest';
 import { StatusBarManager } from './statusBarManager';
 import { LogAnalysis } from './logAnalysis';
 
+/* eslint-disable @typescript-eslint/naming-convention */
 interface WorkflowRun {
     id: number;
     name: string;
@@ -26,6 +27,7 @@ interface FailedJob {
         number: number;
     }>;
 }
+/* eslint-enable @typescript-eslint/naming-convention */
 
 export class GitHubActionsMonitor {
     private octokit: Octokit | undefined;
@@ -95,7 +97,7 @@ export class GitHubActionsMonitor {
     public async checkStatus() {
         if (!this.octokit) {
             const success = await this.initializeOctokit();
-            if (!success) return;
+            if (!success) { return; }
         }
 
         const repoInfo = this.getRepositoryInfo();
@@ -110,6 +112,7 @@ export class GitHubActionsMonitor {
             const { data: runs } = await this.octokit!.actions.listWorkflowRunsForRepo({
                 owner: repoInfo.owner,
                 repo: repoInfo.repo,
+                // eslint-disable-next-line @typescript-eslint/naming-convention
                 per_page: 5,
             });
 
@@ -162,8 +165,6 @@ export class GitHubActionsMonitor {
              context = await this.logAnalysis.getFailureContext(repoInfo.owner, repoInfo.repo, run.id);
         }
 
-        const message = `GitHub Actions Failed: ${run.name}\n${context}`;
-
         // 2. Prompt the Agent
         const prompt = `Workflow "${run.name}" failed on branch "${run.head_branch}".\n\nError Context:\n${context}\n\nPlease analyze this failure and propose a fix.`;
 
@@ -182,7 +183,7 @@ export class GitHubActionsMonitor {
             run,
             jobs: [] // We don't fetch detailed jobs list here anymore, logAnalysis handles logging
         });
-        if (this.recentFailures.length > 10) this.recentFailures = this.recentFailures.slice(0, 10);
+        if (this.recentFailures.length > 10) { this.recentFailures = this.recentFailures.slice(0, 10); }
     }
 
     private showFailureDetails(run: WorkflowRun, jobs: FailedJob[]) {
@@ -219,7 +220,7 @@ export class GitHubActionsMonitor {
         const enabled = config.get<boolean>('enabled', true);
         const pollInterval = config.get<number>('pollInterval', 300) * 1000;
         
-        if (!enabled) return;
+        if (!enabled) { return; }
 
         // Initial check
         this.checkStatus();
