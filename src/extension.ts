@@ -26,25 +26,7 @@ export function activate(context: vscode.ExtensionContext) {
         }
     );
 
-    const configureCommand = vscode.commands.registerCommand(
-        'github-actions-monitor.configure',
-        async () => {
-            const token = await vscode.window.showInputBox({
-                prompt: 'Enter your GitHub Personal Access Token',
-                password: true,
-                placeHolder: 'ghp_xxxxxxxxxxxx'
-            });
 
-            if (token) {
-                await vscode.workspace.getConfiguration('githubActionsMonitor').update(
-                    'token',
-                    token,
-                    vscode.ConfigurationTarget.Global
-                );
-                vscode.window.showInformationMessage('GitHub token saved successfully');
-            }
-        }
-    );
 
     const showFailuresCommand = vscode.commands.registerCommand(
         'github-actions-monitor.showFailures',
@@ -53,7 +35,7 @@ export function activate(context: vscode.ExtensionContext) {
         }
     );
 
-    context.subscriptions.push(checkStatusCommand, configureCommand, showFailuresCommand);
+    context.subscriptions.push(checkStatusCommand, showFailuresCommand);
 
     // Start monitoring
     monitor.start();

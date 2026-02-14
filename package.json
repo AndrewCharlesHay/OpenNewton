@@ -19,10 +19,7 @@
         "command": "github-actions-monitor.checkStatus",
         "title": "GitHub Actions: Check Status"
       },
-      {
-        "command": "github-actions-monitor.configure",
-        "title": "GitHub Actions: Configure"
-      },
+
       {
         "command": "github-actions-monitor.showFailures",
         "title": "GitHub Actions: Show Recent Failures"
@@ -31,11 +28,7 @@
     "configuration": {
       "title": "GitHub Actions Monitor",
       "properties": {
-        "githubActionsMonitor.token": {
-          "type": "string",
-          "default": "",
-          "description": "GitHub Personal Access Token (required for private repos)"
-        },
+
         "githubActionsMonitor.pollInterval": {
           "type": "number",
           "default": 300,

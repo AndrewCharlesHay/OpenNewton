@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { Octokit } from '@octokit/rest';
 import { StatusBarManager } from './statusBarManager';
+import { LogAnalysis } from './logAnalysis';
 
 interface WorkflowRun {
     id: number;
@@ -34,21 +35,27 @@ export class GitHubActionsMonitor {
     private lastCheckedRunId: number = 0;
     private recentFailures: Array<{ run: WorkflowRun; jobs: FailedJob[] }> = [];
     private outputChannel: vscode.OutputChannel;
+    private logAnalysis: LogAnalysis | undefined;
 
     constructor(context: vscode.ExtensionContext, statusBarManager: StatusBarManager) {
         this.context = context;
         this.statusBarManager = statusBarManager;
         this.outputChannel = vscode.window.createOutputChannel('GitHub Actions Failures');
-        this.initializeOctokit();
+        // Octokit initialized in start() via Auth
     }
 
-    private initializeOctokit() {
-        const config = vscode.workspace.getConfiguration('githubActionsMonitor');
-        const token = config.get<string>('token');
-
-        if (token) {
-            this.octokit = new Octokit({ auth: token });
+    private async initializeOctokit(): Promise<boolean> {
+        try {
+            const session = await vscode.authentication.getSession('github', ['repo'], { createIfNone: true });
+            if (session) {
+                this.octokit = new Octokit({ auth: session.accessToken });
+                this.logAnalysis = new LogAnalysis(this.octokit);
+                return true;
+            }
+        } catch (e) {
+            vscode.window.showErrorMessage(`Failed to authenticate with GitHub: ${e}`);
         }
+        return false;
     }
 
     private getRepositoryInfo(): { owner: string; repo: string } | null {
@@ -86,83 +93,62 @@ export class GitHubActionsMonitor {
     }
 
     public async checkStatus() {
-        const config = vscode.workspace.getConfiguration('githubActionsMonitor');
-        const enabled = config.get<boolean>('enabled', true);
-
-        if (!enabled) {
-            vscode.window.showInformationMessage('GitHub Actions monitoring is disabled');
-            return;
-        }
-
         if (!this.octokit) {
-            this.initializeOctokit();
-            if (!this.octokit) {
-                vscode.window.showWarningMessage(
-                    'GitHub token not configured. Run "GitHub Actions: Configure" command.'
-                );
-                return;
-            }
+            const success = await this.initializeOctokit();
+            if (!success) return;
         }
 
         const repoInfo = this.getRepositoryInfo();
         if (!repoInfo) {
-            vscode.window.showWarningMessage('No GitHub repository detected in workspace');
+            this.statusBarManager.updateStatus('idle', 'No GitHub Repo');
             return;
         }
 
         try {
             this.statusBarManager.updateStatus('loading', 'Checking GitHub Actions...');
 
-            const { data: runs } = await this.octokit.actions.listWorkflowRunsForRepo({
+            const { data: runs } = await this.octokit!.actions.listWorkflowRunsForRepo({
                 owner: repoInfo.owner,
                 repo: repoInfo.repo,
-                per_page: 10,
+                per_page: 5,
             });
 
             if (runs.workflow_runs.length === 0) {
-                this.statusBarManager.updateStatus('success', 'No workflow runs found');
+                this.statusBarManager.updateStatus('success', 'No runs');
                 return;
             }
 
             const latestRun = runs.workflow_runs[0];
-            const failedRuns = runs.workflow_runs.filter(
-                run => run.conclusion === 'failure' || run.conclusion === 'cancelled'
+            
+            // Check for new failures
+            const newFailures = runs.workflow_runs.filter(
+                run => (run.conclusion === 'failure' || run.conclusion === 'cancelled') && run.id > this.lastCheckedRunId
             );
 
-            // Check for new failures since last check
-            const newFailures = failedRuns.filter(run => run.id > this.lastCheckedRunId);
-
-            if (newFailures.length > 0 && config.get<boolean>('notifyOnFailure', true)) {
+            if (newFailures.length > 0) {
                 for (const failedRun of newFailures) {
                     await this.notifyFailure(repoInfo, failedRun as WorkflowRun);
                 }
             }
 
-            // Update last checked run ID
-            if (runs.workflow_runs.length > 0) {
-                this.lastCheckedRunId = Math.max(
-                    this.lastCheckedRunId,
-                    ...runs.workflow_runs.map(r => r.id)
-                );
+            // Update ID
+             this.lastCheckedRunId = Math.max(
+                this.lastCheckedRunId, 
+                ...runs.workflow_runs.map(r => r.id)
+            );
+
+            // Update Status Bar
+            if (latestRun.conclusion === 'success') {
+                this.statusBarManager.updateStatus('success', 'Passing');
+            } else if (latestRun.conclusion === 'failure') {
+                this.statusBarManager.updateStatus('error', 'Failing');
+            } else {
+                this.statusBarManager.updateStatus('loading', 'Running...');
             }
 
-            // Update status bar
-            if (latestRun.conclusion === 'success') {
-                this.statusBarManager.updateStatus('success', 'All checks passing');
-            } else if (latestRun.conclusion === 'failure' || latestRun.conclusion === 'cancelled') {
-                this.statusBarManager.updateStatus('error', `Build failing: ${latestRun.name}`);
-            } else if (latestRun.status === 'in_progress' || latestRun.status === 'queued') {
-                this.statusBarManager.updateStatus('loading', 'Build in progress...');
-            } else {
-                this.statusBarManager.updateStatus('idle', 'Unknown status');
-            }
         } catch (error) {
-            console.error('Error checking GitHub Actions:', error);
-            this.statusBarManager.updateStatus('error', 'Error checking status');
-            
-            if (error instanceof Error) {
-                vscode.window.showErrorMessage(`GitHub Actions error: ${error.message}`);
-            }
+            console.error(error);
+            this.statusBarManager.updateStatus('error', 'Error');
         }
     }
 
@@ -170,145 +156,40 @@ export class GitHubActionsMonitor {
         repoInfo: { owner: string; repo: string },
         run: WorkflowRun
     ) {
-        if (!this.octokit) {
-            return;
+        // 1. Get Failure Context (Logs)
+        let context = "Unable to fetch logs.";
+        if (this.logAnalysis) {
+             context = await this.logAnalysis.getFailureContext(repoInfo.owner, repoInfo.repo, run.id);
         }
 
-        try {
-            // Fetch failed jobs
-            const { data: jobs } = await this.octokit.actions.listJobsForWorkflowRun({
-                owner: repoInfo.owner,
-                repo: repoInfo.repo,
-                run_id: run.id,
-            });
+        const message = `GitHub Actions Failed: ${run.name}\n${context}`;
 
-            const failedJobs = jobs.jobs.filter(
-                job => job.conclusion === 'failure' || job.conclusion === 'cancelled'
-            );
+        // 2. Prompt the Agent
+        const prompt = `Workflow "${run.name}" failed on branch "${run.head_branch}".\n\nError Context:\n${context}\n\nPlease analyze this failure and propose a fix.`;
 
-            // Store failure info
-            this.recentFailures.unshift({
-                run,
-                jobs: failedJobs as FailedJob[],
-            });
-
-            // Keep only last 10 failures
-            if (this.recentFailures.length > 10) {
-                this.recentFailures = this.recentFailures.slice(0, 10);
-            }
-
-            // Create detailed failure message
-            const failureDetails = failedJobs
-                .map(job => {
-                    const failedSteps = job.steps
-                        ?.filter(step => step.conclusion === 'failure')
-                        .map(step => `  - ${step.name}`)
-                        .join('\n') || '';
-                    
-                    return `Job: ${job.name}\n${failedSteps}`;
-                })
-                .join('\n\n');
-
-            const message = `GitHub Actions Failed: ${run.name}\n\nBranch: ${run.head_branch}\nCommit: ${run.head_commit.message}\n\n${failureDetails}`;
-
-            // Show notification with actions
-            const action = await vscode.window.showErrorMessage(
-                `GitHub Actions workflow "${run.name}" failed`,
-                'View Details',
-                'Open in Browser'
-            );
-
-            if (action === 'View Details') {
-                this.showFailureDetails(run, failedJobs as FailedJob[]);
-            } else if (action === 'Open in Browser') {
+        // 3. Trigger Chat
+        vscode.commands.executeCommand('workbench.action.chat.open', { query: prompt });
+        
+        // 4. Show notification (optional, maybe less intrusive now?)
+        vscode.window.showErrorMessage(`Workflow ${run.name} failed. Opening Chat...`, 'Open Logs').then(selection => {
+            if (selection === 'Open Logs') {
                 vscode.env.openExternal(vscode.Uri.parse(run.html_url));
             }
+        });
 
-            // Log to output channel for coding agents
-            this.logForCodingAgent(message);
-        } catch (error) {
-            console.error('Error fetching job details:', error);
-        }
+        // 5. Store failure info for history
+        this.recentFailures.unshift({
+            run,
+            jobs: [] // We don't fetch detailed jobs list here anymore, logAnalysis handles logging
+        });
+        if (this.recentFailures.length > 10) this.recentFailures = this.recentFailures.slice(0, 10);
     }
 
     private showFailureDetails(run: WorkflowRun, jobs: FailedJob[]) {
-        const panel = vscode.window.createWebviewPanel(
-            'githubActionsFailure',
-            `Failed: ${run.name}`,
-            vscode.ViewColumn.One,
-            {}
-        );
-
-        const jobsHtml = jobs
-            .map(job => {
-                const stepsHtml = job.steps
-                    ?.filter(step => step.conclusion === 'failure')
-                    .map(
-                        step =>
-                            `<li><strong>Step ${step.number}:</strong> ${step.name} - ${step.conclusion}</li>`
-                    )
-                    .join('') || '';
-
-                return `
-                    <div class="job">
-                        <h3>${job.name}</h3>
-                        <p>Status: ${job.conclusion}</p>
-                        <ul>${stepsHtml}</ul>
-                        <a href="${job.html_url}">View Job</a>
-                    </div>
-                `;
-            })
-            .join('');
-
-        panel.webview.html = `
-            <!DOCTYPE html>
-            <html lang="en">
-            <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>Workflow Failure Details</title>
-                <style>
-                    body { font-family: var(--vscode-font-family); padding: 20px; }
-                    h1 { color: var(--vscode-errorForeground); }
-                    .job { 
-                        margin: 20px 0; 
-                        padding: 15px; 
-                        border: 1px solid var(--vscode-panel-border);
-                        border-radius: 5px;
-                    }
-                    .job h3 { margin-top: 0; }
-                    a { color: var(--vscode-textLink-foreground); }
-                    ul { margin: 10px 0; }
-                    .metadata { 
-                        background: var(--vscode-editor-background); 
-                        padding: 10px; 
-                        border-radius: 3px;
-                        margin: 10px 0;
-                    }
-                </style>
-            </head>
-            <body>
-                <h1>Workflow Failed: ${run.name}</h1>
-                <div class="metadata">
-                    <p><strong>Branch:</strong> ${run.head_branch}</p>
-                    <p><strong>Commit:</strong> ${run.head_commit.message}</p>
-                    <p><strong>Time:</strong> ${new Date(run.created_at).toLocaleString()}</p>
-                    <p><a href="${run.html_url}">View on GitHub</a></p>
-                </div>
-                <h2>Failed Jobs</h2>
-                ${jobsHtml}
-            </body>
-            </html>
-        `;
-    }
-
-    private logForCodingAgent(message: string) {
-        this.outputChannel.appendLine('='.repeat(80));
-        this.outputChannel.appendLine(`[${new Date().toISOString()}] GITHUB ACTIONS FAILURE DETECTED`);
-        this.outputChannel.appendLine('='.repeat(80));
-        this.outputChannel.appendLine(message);
-        this.outputChannel.appendLine('='.repeat(80));
-        this.outputChannel.show(true);
+         // Existing implementation would go here, simplified for this rewrite to focus on agentic flow
+         // If we want to keep the webview, we need to fetch jobs again or Refactor notifyFailure to fetch them.
+         // For now, let's just open the URL.
+         vscode.env.openExternal(vscode.Uri.parse(run.html_url));
     }
 
     public async showRecentFailures() {
@@ -337,10 +218,8 @@ export class GitHubActionsMonitor {
         const config = vscode.workspace.getConfiguration('githubActionsMonitor');
         const enabled = config.get<boolean>('enabled', true);
         const pollInterval = config.get<number>('pollInterval', 300) * 1000;
-
-        if (!enabled) {
-            return;
-        }
+        
+        if (!enabled) return;
 
         // Initial check
         this.checkStatus();
