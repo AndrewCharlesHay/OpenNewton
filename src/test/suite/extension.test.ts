@@ -23,7 +23,7 @@ suite('Extension Test Suite', () => {
     });
 
     test('Configuration should have expected properties', () => {
-        const config = vscode.workspace.getConfiguration('githubActionsMonitor');
+        const config = vscode.workspace.getConfiguration('openNewton');
         
         // Check that configuration exists
         assert.ok(config);
@@ -34,7 +34,7 @@ suite('Extension Test Suite', () => {
     });
 
     test('Should have correct default configuration values', () => {
-        const config = vscode.workspace.getConfiguration('githubActionsMonitor');
+        const config = vscode.workspace.getConfiguration('openNewton');
         
         // Get default values
         const enabled = config.get('enabled', true);

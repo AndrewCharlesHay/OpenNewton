@@ -76,7 +76,7 @@ suite('GitHubActionsMonitor Test Suite', () => {
 
     test('Should create output channel on construction', () => {
         assert.ok(vscode.window.createOutputChannel as sinon.SinonStub);
-        assert.ok((vscode.window.createOutputChannel as sinon.SinonStub).calledWith('GitHub Actions Failures'));
+        assert.ok((vscode.window.createOutputChannel as sinon.SinonStub).calledWith('OpenNewton'));
     });
 
     test('Should check configuration on start', () => {
@@ -86,7 +86,7 @@ suite('GitHubActionsMonitor Test Suite', () => {
         monitor.start();
         
         // getConfiguration is called in start()
-        assert.ok((vscode.workspace.getConfiguration as sinon.SinonStub).calledWith('githubActionsMonitor'));
+        assert.ok((vscode.workspace.getConfiguration as sinon.SinonStub).calledWith('openNewton'));
     });
 
     test('Should start monitoring when enabled', () => {
